@@ -1,17 +1,17 @@
 from PrintHelper import printBlue, printGreen, printRed, printError, printOverwriteLine, printDim, printOverwrite
 from colorama import Fore, Style, Back
 from threading import Thread
+from typing import Optional
 from typing import Union
 import threading
 import colorama
+import curses
 import socket
 import sys
 import os
 
 BUFFER_SIZE: int = 1024
 QUIT: str = 'quit'
-
-colorama.init()
 
 class ClientTCP():
     def __init__(self, host: str, port: int, username: str):
@@ -70,8 +70,12 @@ class ClientTCP():
             else: self.__sendMessage__(message)
 
 if __name__ == '__main__':
+    colorama.init()
+
     host: str = input(Style.DIM + 'Enter the server address: ' + Style.RESET_ALL)
     port: int = int(input(Style.DIM + 'Enter the server port: ' + Style.RESET_ALL))
     username: str = input(Style.DIM + 'Enter a username: ' + Style.RESET_ALL)
     client: ClientTCP = ClientTCP(host, port, username)
     client.connect()
+
+    colorama.deinit()
