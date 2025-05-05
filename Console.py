@@ -75,6 +75,19 @@ class Console():
         self.console.clrtoeol()
         self.console.refresh()
 
+    def getLineText(self) -> str:
+        text: str = ''
+        y, x = self.console.getyx()
+        yMax, xMax = self.console.getmaxyx()
+        yMax -= 1
+        xMax -= 1
+        for i in range(xMax):
+            charAndAttr: int = self.console.inch(y, i)
+            charCode: int = charAndAttr & 0xFF
+            character: str = chr(charCode)
+            text += character
+        return text.strip()
+
     def move(self, x, y):
         self.console.move(y, x)
         self.console.refresh()
@@ -102,23 +115,18 @@ class Console():
         self.console.move(y, 0)
         self.console.refresh()
 
+    def moveFrontText(self):
+        text: str = self.getLineText()
+        y, x = self.console.getyx()
+        self.console.move(y, len(text))
+        self.console.refresh()
+
     def getCursorPos(self) -> tuple[int, int]:
         y, x = self.console.getyx()
         return (x, y)
     
-    def getLineText(self):
-        text: str = ''
-        y, x = self.console.getyx()
-        yMax, xMax = self.console.getmaxyx()
-        yMax -= 1
-        xMax -= 1
-        for i in range(xMax):
-            charAndAttr: int = self.console.inch(y, i)
-            charCode: int = charAndAttr & 0xFF
-            character: str = chr(charCode)
-            text += character
-        return text.strip()
-    
+    def getBackText(self, amount: int) -> str:
+        pass #TODO Impliment function body
 
 if __name__ == '__main__':
     console: Console = Console()
@@ -128,12 +136,13 @@ if __name__ == '__main__':
     console.printlnDim('Dim Text')
     console.printlnError('Error Text')
     console.println('This is normal text')
-    console.println('hello! how is everyone!')
+    console.println('This text will be erased and replaced with "hello!" in 2 seconds...')
+    time.sleep(2)
     console.moveUp()
+    console.clearLine()
+    console.print('hello!')
     text: str = console.getLineText()
-    console.moveDown()
-    console.moveFront()
-    # text: str = console.getBackText(10)
+    console.moveFrontText()
     console.println(text)
     input('')
     console.close()
