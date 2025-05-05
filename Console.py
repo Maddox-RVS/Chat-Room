@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Optional
 import curses
 import time
@@ -13,15 +12,7 @@ COLOR_ERROR: int = 50
 LINESEP: str = '\n'
 
 class Console():
-    @dataclass
-    class Log:
-        text: str
-        startX: int
-        startY: int
-
     def __init__(self):
-        self.backlog: dict[int, Console.Log] = {}
-
         self.console: Optional[curses.window] = curses.initscr()
         curses.start_color()
         curses.init_pair(COLOR_BLUE, curses.COLOR_BLUE, curses.COLOR_BLACK)
@@ -37,68 +28,50 @@ class Console():
             self.console.refresh()
             curses.init_pair(COLOR_DIM, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
-    def __log__(self, text: str, x: int, y: int):
-        self.backlog[y] = Console.Log(text, x, y)
-
     def close(self):
         curses.endwin()
 
     def print(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(0))
         self.console.refresh()
     def println(self, string: str):
         self.print(string + LINESEP)
 
     def printBlue(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(COLOR_BLUE))
         self.console.refresh()
     def printlnBlue(self, string: str):
         self.printBlue(string + LINESEP)
 
     def printRed(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(COLOR_RED))
         self.console.refresh()
     def printlnRed(self, string: str):
         self.printRed(string + LINESEP)
 
     def printGreen(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(COLOR_GREEN))
         self.console.refresh()
     def printlnGreen(self, string: str):
         self.printGreen(string + LINESEP)
 
     def printDim(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(COLOR_DIM))
         self.console.refresh()
     def printlnDim(self, string: str):
         self.printDim(string + LINESEP)
 
     def printError(self, string: str):
-        y, x = self.console.getyx()
-        self.__log__(string, x, y)
         self.console.addstr(string, curses.color_pair(COLOR_ERROR))
         self.console.refresh()
     def printlnError(self, string: str):
         self.printError(string + LINESEP)
 
     def clear(self):
-        self.backlog.clear()
         self.console.clear()
         self.console.refresh()
 
     def clearLine(self):
-        y, x = self.console.getyx()
-        self.backlog.pop(y)
         self.console.clrtoeol()
         self.console.refresh()
 
@@ -106,21 +79,46 @@ class Console():
         self.console.move(y, x)
         self.console.refresh()
 
+    def moveUp(self):
+        yMax, xMax = self.console.getmaxyx()
+        yMax -= 1
+        xMax -= 1
+        y, x = self.console.getyx()
+        newY = max(0, min(y - 1, yMax))
+        self.console.move(newY, x)
+        self.console.refresh()
+
+    def moveDown(self):
+        yMax, xMax = self.console.getmaxyx()
+        yMax -= 1
+        xMax -= 1
+        y, x = self.console.getyx()
+        newY = max(0, min(y + 1, yMax))
+        self.console.move(newY, x)
+        self.console.refresh()
+
+    def moveFront(self):
+        y, x = self.console.getyx()
+        self.console.move(y, 0)
+        self.console.refresh()
+
     def getCursorPos(self) -> tuple[int, int]:
         y, x = self.console.getyx()
         return (x, y)
     
-    def getBackText(self, amount):
+    def getLineText(self):
         text: str = ''
         y, x = self.console.getyx()
-        while len(text) < amount:
-            log: Console.Log = self.backlog.get(y, Console.Log('', 0, y))
-            if len(log.text) < (amount - len(text)):
-                text += log.text[x:0:-1]
-                y -= 1
-                x = len(self.backlog[y - 1].text) - 1
-            else: text += log.text[x:0:-1]
-        return text[::-1]
+        yMax, xMax = self.console.getmaxyx()
+        yMax -= 1
+        xMax -= 1
+        for i in range(xMax):
+            charAndAttr: int = self.console.inch(y, i)
+            charCode: int = charAndAttr & 0xFF
+            character: str = chr(charCode)
+            text += character
+        return text.strip()
+    
 
 if __name__ == '__main__':
     console: Console = Console()
@@ -130,13 +128,12 @@ if __name__ == '__main__':
     console.printlnDim('Dim Text')
     console.printlnError('Error Text')
     console.println('This is normal text')
-    console.println('This test will be erased and replaced with "hello!" in 2 seconds...')
-    time.sleep(2)
-    x, y = console.getCursorPos()
-    console.move(x, y - 1)
-    console.clearLine()
-    console.println('hello!')
-    text: str = console.getBackText(10)
-    console.println(text[:len(text)-1])
+    console.println('hello! how is everyone!')
+    console.moveUp()
+    text: str = console.getLineText()
+    console.moveDown()
+    console.moveFront()
+    # text: str = console.getBackText(10)
+    console.println(text)
     input('')
     console.close()
