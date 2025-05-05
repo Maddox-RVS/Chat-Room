@@ -20,7 +20,7 @@ class Console():
         startY: int
 
     def __init__(self):
-        self.backlog: list[Console.Log] = []
+        self.backlog: dict[int, Console.Log] = {}
 
         self.console: Optional[curses.window] = curses.initscr()
         curses.start_color()
@@ -38,8 +38,7 @@ class Console():
             curses.init_pair(COLOR_DIM, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
     def __log__(self, text: str, x: int, y: int):
-        self.backlog.append(Console.Log(text, x, y))
-        self.backlog.sort(key=lambda log: log.startY)
+        self.backlog[y] = Console.Log(text, x, y)
 
     def close(self):
         curses.endwin()
@@ -98,7 +97,8 @@ class Console():
         self.console.refresh()
 
     def clearLine(self):
-        self.backlog.pop()
+        y, x = self.console.getyx()
+        self.backlog.pop(y)
         self.console.clrtoeol()
         self.console.refresh()
 
@@ -110,10 +110,17 @@ class Console():
         y, x = self.console.getyx()
         return (x, y)
     
-    # def getBackText(self, amount):
-    #     text: str = ''
-    #     y, x = self.console.getyx()
-    #     for i in range(amount):
+    def getBackText(self, amount):
+        text: str = ''
+        y, x = self.console.getyx()
+        while len(text) < amount:
+            log: Console.Log = self.backlog.get(y, Console.Log('', 0, y))
+            if len(log.text) < (amount - len(text)):
+                text += log.text[x:0:-1]
+                y -= 1
+                x = len(self.backlog[y - 1].text) - 1
+            else: text += log.text[x:0:-1]
+        return text[::-1]
 
 if __name__ == '__main__':
     console: Console = Console()
@@ -128,8 +135,8 @@ if __name__ == '__main__':
     x, y = console.getCursorPos()
     console.move(x, y - 1)
     console.clearLine()
-    console.print('hello!')
-    text: str = console.getBackText(5) 
-    console.println(text)
+    console.println('hello!')
+    text: str = console.getBackText(10)
+    console.println(text[:len(text)-1])
     input('')
     console.close()
