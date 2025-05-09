@@ -62,7 +62,8 @@ class Console():
         self.printDim(string + LINESEP)
 
     def printError(self, string: str):
-        self.console.addstr(string, curses.color_pair(COLOR_ERROR))
+        self.console.addstr('ERROR', curses.color_pair(COLOR_ERROR))
+        self.console.addstr(f' {string}', curses.color_pair(0))
         self.console.refresh()
     def printlnError(self, string: str):
         self.printError(string + LINESEP)
@@ -75,9 +76,20 @@ class Console():
         self.console.clrtoeol()
         self.console.refresh()
 
-    def getLineText(self) -> str:
+    def getCurrentLineText(self) -> str:
         text: str = ''
         y, x = self.console.getyx()
+        yMax, xMax = self.console.getmaxyx()
+        yMax -= 1
+        xMax -= 1
+        for i in range(xMax):
+            charAndAttr: int = self.console.inch(y, i)
+            charCode: int = charAndAttr & 0xFF
+            character: str = chr(charCode)
+            text += character
+        return text.strip()
+    def getLineText(self, y: int) -> str:
+        text: str = ''
         yMax, xMax = self.console.getmaxyx()
         yMax -= 1
         xMax -= 1
@@ -116,7 +128,7 @@ class Console():
         self.console.refresh()
 
     def moveFrontText(self):
-        text: str = self.getLineText()
+        text: str = self.getCurrentLineText()
         y, x = self.console.getyx()
         self.console.move(y, len(text))
         self.console.refresh()
@@ -126,7 +138,15 @@ class Console():
         return (x, y)
     
     def getBackText(self, amount: int) -> str:
-        pass #TODO Impliment function body
+        text: str = ''
+        y, x = self.console.getyx()
+        while len(text) < amount:
+            currentLine: str = self.getLineText(y)
+            if len(currentLine) < amount: text += currentLine
+            else: 
+                text += currentLine[len(currentLine):len(currentLine) - (amount + 1): -1]
+                y -= 1
+        return text[::-1]
 
 if __name__ == '__main__':
     console: Console = Console()
@@ -141,8 +161,10 @@ if __name__ == '__main__':
     console.moveUp()
     console.clearLine()
     console.print('hello!')
-    text: str = console.getLineText()
+    text: str = console.getCurrentLineText()
     console.moveFrontText()
+    console.println(text)
+    text: str = console.getBackText(8)
     console.println(text)
     input('')
     console.close()
