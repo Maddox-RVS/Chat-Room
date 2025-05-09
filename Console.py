@@ -78,18 +78,21 @@ class Console():
 
     def getCurrentLineText(self) -> str:
         text: str = ''
-        y, x = self.console.getyx()
+        originalY, originalX = self.console.getyx()
         yMax, xMax = self.console.getmaxyx()
         yMax -= 1
         xMax -= 1
         for i in range(xMax):
-            charAndAttr: int = self.console.inch(y, i)
+            charAndAttr: int = self.console.inch(originalY, i)
             charCode: int = charAndAttr & 0xFF
             character: str = chr(charCode)
             text += character
+        self.console.move(originalY, originalX)
         return text.strip()
+    
     def getLineText(self, y: int) -> str:
         text: str = ''
+        originalY, originalX = self.console.getyx()
         yMax, xMax = self.console.getmaxyx()
         yMax -= 1
         xMax -= 1
@@ -98,6 +101,7 @@ class Console():
             charCode: int = charAndAttr & 0xFF
             character: str = chr(charCode)
             text += character
+        self.console.move(originalY, originalX)
         return text.strip()
 
     def move(self, x, y):
@@ -142,10 +146,25 @@ class Console():
         y, x = self.console.getyx()
         while len(text) < amount:
             currentLine: str = self.getLineText(y)
-            if len(currentLine) < amount: text += currentLine
-            else: 
-                text += currentLine[len(currentLine):len(currentLine) - (amount + 1): -1]
+            amountNeeded: int = (amount - len(text))
+            if amountNeeded > len(currentLine):
+                text += currentLine[::-1]
                 y -= 1
+            else: text += currentLine[len(currentLine) - amountNeeded:][::-1]
+        return text[::-1]
+    
+    def getBackTextToCharacter(self, character: str) -> str:
+        text: str = ''
+        y, x = self.console.getyx()
+        while True:
+            currentLine: str = self.getLineText(y)
+            characterIndex: int = currentLine.find(character)
+            if characterIndex == -1:
+                text += currentLine[::-1]
+                y -= 1
+            else: 
+                text += currentLine[characterIndex:][::-1]
+                break
         return text[::-1]
 
 if __name__ == '__main__':
@@ -164,7 +183,14 @@ if __name__ == '__main__':
     text: str = console.getCurrentLineText()
     console.moveFrontText()
     console.println(text)
-    text: str = console.getBackText(8)
-    console.println(text)
+    console.println('this is text')
+    console.println('this is text')
+    console.println('this is text')
+    text2: str = console.getBackText(11)
+    console.println(text2)
+    console.println('[Enter Message] ->\u200b Hello this is a message that is being written to send but isnt fini')
+    text3: str = console.getBackTextToCharacter('\x0b')[2:]
+    console.println(text3)
+    # \u200b
     input('')
     console.close()
