@@ -83,7 +83,13 @@ class ServerTCP():
                 self.console.printlnError(f'Unknown command -> {' '.join(command)}')
 
 if __name__ == '__main__':
-    port: int = int(input(Style.DIM + 'Enter a port number: ' + Style.RESET_ALL))
+    tempConsole: Console = Console()
+
+    tempConsole.printDim('Enter a port number: ')
+    port: str = int(tempConsole.input())
+    tempConsole.close()
+
     server: ServerTCP = ServerTCP(port)
     server.start()
+    
     time.sleep(2)
