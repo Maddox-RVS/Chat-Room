@@ -33,14 +33,15 @@ class ClientHandler(Thread):
     @override
     def run(self):
         try:
-            while True:
+            while not self.disconnected:
                 data: bytes = self.clientSocket.recv(BUFFER_SIZE)
                 if not data:
                     self.disconnect()
                     break
                 message = data.decode('utf-8')
 
-                currentText: str = self.console.getBackTextToString('[Enter Command] ->', 3, '{Timeout ERROR, current command erased.} -> ')[1:]
+                currentLine: str = self.console.getCurrentLineText()
+                if currentLine != '': currentText: str = self.console.getBackTextToString('[Enter Command] ->', 3, '{Timeout ERROR, current command erased.} -> ')[1:]
                 self.console.clearLine()
                 self.console.moveFront()
                 self.console.println(f'[{self.username}] -> {message}')
