@@ -52,7 +52,10 @@ class ClientTCP():
                     currentText: str = self.console.getBackTextToString('[Send Message] ->', 3, '{Timeout ERROR, current message erased.} -> ')[1:]
                     self.console.clearLine()
                     self.console.moveFront()
-                    self.console.println(data.decode('utf-8'))
+
+                    message: str = data.decode('utf-8').split()
+                    self.console.println()
+
                     self.console.printDim(f'[Send Message] -> ')
                     self.console.print(currentText)
             except ConnectionRefusedError:
