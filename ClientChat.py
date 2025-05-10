@@ -2,7 +2,6 @@ from threading import Thread
 from Console import Console
 from typing import Union
 import threading
-import colorama
 import socket
 import time
 
