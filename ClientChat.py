@@ -4,6 +4,7 @@ from typing import Union
 import threading
 import socket
 import time
+import sys
 
 BUFFER_SIZE: int = 1024
 QUIT: str = '/quit'
@@ -82,15 +83,27 @@ class ClientTCP():
             else: self.__sendMessage__(message)
 
 if __name__ == '__main__':
-    tempConsole: Console = Console()
+    host: str = ''
+    port: int = 0
+    username: str = ''
 
-    tempConsole.printDim('Enter the server address: ')
-    host: str = tempConsole.input()
-    tempConsole.printDim('Enter the server port: ')
-    port: str = int(tempConsole.input())
-    tempConsole.printDim('Enter a username: ')
-    username: str = tempConsole.input()
-    tempConsole.close()
+    if not (len(sys.argv) == 1 or len(sys.argv) == 4):
+        print('Usage: python ClientChat.py [server address] [server port] [username]')
+        exit(0)
+
+    if len(sys.argv) == 1:
+        tempConsole: Console = Console()
+        tempConsole.printDim('Enter the server address: ')
+        host = tempConsole.input()
+        tempConsole.printDim('Enter the server port: ')
+        port = int(tempConsole.input())
+        tempConsole.printDim('Enter a username: ')
+        username = tempConsole.input()
+        tempConsole.close()
+    else:
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        username = sys.argv[3]
 
     client: ClientTCP = ClientTCP(host, port, username)
     client.connect()
