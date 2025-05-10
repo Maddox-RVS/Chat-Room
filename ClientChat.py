@@ -17,7 +17,7 @@ class ClientTCP():
         self.port: int = port
         self.username: str = username
         self.clientSocket: Union[None, socket.socket] = None
-        self.disconnected: bool = False
+        self.disconnected: bool = True
         self.stopEvent: Union[None, threading.Event] = None
         self.console: Console = Console()
 
@@ -39,6 +39,7 @@ class ClientTCP():
             try:
                 self.clientSocket = clientSocket
                 self.clientSocket.connect((self.host, self.port))
+                self.disconnected = False
 
                 self.stopEvent: threading.Event = threading.Event()
                 messageSenderThread: Thread = Thread(target=self.__runMessageSender__, name='messageSender', args=(self.stopEvent,))
@@ -57,10 +58,9 @@ class ClientTCP():
             except ConnectionRefusedError:
                 self.console.printlnError('Connection refused!')
             except Exception as e:
-                if not self.disconnected: 
-                    self.console.println('')
-                    self.console.printlnError('Issue connecting to server!')
-                    self.disconnect()
+                self.console.println('')
+                self.console.printlnError('Issue connecting to server!')
+                if not self.disconnected: self.disconnect()
 
     def __runMessageSender__(self, stopEvent):
         while not self.stopEvent.is_set():
@@ -82,9 +82,16 @@ class ClientTCP():
 if __name__ == '__main__':
     colorama.init()
 
-    host: str = input(Style.DIM + 'Enter the server address: ' + Style.RESET_ALL)
-    port: int = int(input(Style.DIM + 'Enter the server port: ' + Style.RESET_ALL))
-    username: str = input(Style.DIM + 'Enter a username: ' + Style.RESET_ALL)
+    tempConsole: Console = Console()
+
+    tempConsole.printDim('Enter the server address: ')
+    host: str = tempConsole.input()
+    tempConsole.printDim('Enter the server port: ')
+    port: str = int(tempConsole.input())
+    tempConsole.printDim('Enter a username: ')
+    username: str = tempConsole.input()
+    tempConsole.close()
+
     client: ClientTCP = ClientTCP(host, port, username)
     client.connect()
 
