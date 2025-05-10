@@ -82,8 +82,6 @@ class ClientTCP():
             else: self.__sendMessage__(message)
 
 if __name__ == '__main__':
-    colorama.init()
-
     tempConsole: Console = Console()
 
     tempConsole.printDim('Enter the server address: ')
@@ -96,7 +94,5 @@ if __name__ == '__main__':
 
     client: ClientTCP = ClientTCP(host, port, username)
     client.connect()
-
-    colorama.deinit()
 
     time.sleep(2)
