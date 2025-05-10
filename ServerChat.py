@@ -1,6 +1,4 @@
-from PrintHelper import printBlue, printGreen, printRed, printError
 from ClientHandler import ClientHandler
-from colorama import Fore, Style, Back
 from threading import Thread
 from Console import Console
 from typing import Union
@@ -57,7 +55,7 @@ class ServerTCP():
                     self.console.moveFront()
                     self.console.printlnBlue(f'Client {clientAddress} with name {username} has connected to the server!')
                     self.console.printDim('[Enter Command] -> ')
-                    self.__announce__(Fore.BLUE + f'{username} has joined the server!' + Style.RESET_ALL)
+                    self.__announce__(f'blue {username} has joined the server!')
                     clientHandler: ClientHandler = ClientHandler(clientSocket, clientAddress, self.serverClients, self.console, username)
                     self.serverClients.append(clientHandler)
                     clientHandler.start()
@@ -77,8 +75,8 @@ class ServerTCP():
             elif command[0] == ANNOUNCE:
                 words: list[str] = command[1:]
                 message: str = ' '.join(words)
-                self.__announce__(f'*[SERVER]* -> {message}')
-                self.console.println(f'*[SERVER]* -> {message}')
+                self.__announce__(f'green *[SERVER]* -> {message}')
+                self.console.printlnGreen(f'*[SERVER]* -> {message}')
             else:
                 self.console.printlnError(f'Unknown command -> {' '.join(command)}')
 

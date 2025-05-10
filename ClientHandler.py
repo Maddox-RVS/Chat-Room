@@ -1,5 +1,3 @@
-from PrintHelper import printBlue, printGreen, printRed, printError
-from colorama import Fore, Back, Style
 from threading import Thread
 from typing import override
 from Console import Console
@@ -26,7 +24,7 @@ class ClientHandler(Thread):
         self.serverClients.remove(self)
         # printBlue(f'Disconnected {self.clientAddress} with name {self.username}.')
         self.console.printlnBlue(f'Disconnected {self.clientAddress} with name {self.username}.')
-        self.__announce__(Fore.BLUE + f'{self.username} has disconnected from the server.' + Style.RESET_ALL)
+        self.__announce__(f'blue {self.username} has disconnected from the server.')
 
     def __announce__(self, message: str):
         for i in range(len(self.serverClients)):

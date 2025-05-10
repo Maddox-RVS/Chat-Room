@@ -1,5 +1,3 @@
-from PrintHelper import printBlue, printGreen, printRed, printError, printOverwriteLine, printDim, printOverwrite
-from colorama import Fore, Style, Back
 from threading import Thread
 from Console import Console
 from typing import Union
@@ -54,7 +52,9 @@ class ClientTCP():
                     self.console.moveFront()
 
                     message: str = data.decode('utf-8').split()
-                    self.console.println()
+                    if message[0] == 'blue': self.console.printlnBlue(' '.join(message[1:]))
+                    elif message[0] == 'green': self.console.printlnGreen(' '.join(message[1:]))
+                    else: self.console.println(' '.join(message))
 
                     self.console.printDim(f'[Send Message] -> ')
                     self.console.print(currentText)
