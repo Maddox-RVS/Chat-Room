@@ -61,8 +61,8 @@ class ServerTCP():
                     clientHandler: ClientHandler = ClientHandler(clientSocket, clientAddress, self.serverClients, self.console, username)
                     self.serverClients.append(clientHandler)
                     clientHandler.start()
-        except Exception as e: 
-            if not self.isShutdown: self.console.printlnGreen('Server shutdown: ' + e)
+        except Exception: 
+            if not self.isShutdown: self.console.printlnGreen('Server shutdown: ')
             else: self.console.printlnGreen('Server shutdown.')
             self.isShutdown = True
 
@@ -91,5 +91,5 @@ if __name__ == '__main__':
 
     server: ServerTCP = ServerTCP(port)
     server.start()
-    
+
     time.sleep(2)
