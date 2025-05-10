@@ -58,6 +58,7 @@ class ClientTCP():
                 self.console.printlnError('Connection refused!')
             except Exception as e:
                 if not self.disconnected: 
+                    self.console.println('')
                     self.console.printlnError('Issue connecting to server!')
                     self.disconnect()
 
