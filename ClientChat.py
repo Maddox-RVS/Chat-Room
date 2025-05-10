@@ -9,7 +9,7 @@ import socket
 import time
 
 BUFFER_SIZE: int = 1024
-QUIT: str = 'quit'
+QUIT: str = '/quit'
 
 class ClientTCP():
     def __init__(self, host: str, port: int, username: str):
@@ -48,7 +48,7 @@ class ClientTCP():
 
                 while True:
                     data: bytes = self.clientSocket.recv(BUFFER_SIZE)
-                    currentText: str = self.console.getBackTextToString('[Send Message] ->', 3, '\{Timeout ERROR, current message erased.\} -> ')[1:]
+                    currentText: str = self.console.getBackTextToString('[Send Message] ->', 3, '{Timeout ERROR, current message erased.} -> ')[1:]
                     self.console.clearLine()
                     self.console.moveFront()
                     self.console.println(data.decode('utf-8'))
@@ -89,4 +89,4 @@ if __name__ == '__main__':
 
     colorama.deinit()
 
-    time.sleep(1)
+    time.sleep(2)
