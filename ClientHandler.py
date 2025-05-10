@@ -22,7 +22,6 @@ class ClientHandler(Thread):
         self.clientSocket.close()
         self.disconnected = True
         self.serverClients.remove(self)
-        # printBlue(f'Disconnected {self.clientAddress} with name {self.username}.')
         self.console.printlnBlue(f'Disconnected {self.clientAddress} with name {self.username}.')
         self.__announce__(f'blue {self.username} has disconnected from the server.')
 
@@ -40,7 +39,6 @@ class ClientHandler(Thread):
                     self.disconnect()
                     break
                 message = data.decode('utf-8')
-                # print(f'[{self.username}] -> {message}')
 
                 currentText: str = self.console.getBackTextToString('[Enter Command] ->', 3, '{Timeout ERROR, current command erased.} -> ')[1:]
                 self.console.clearLine()
@@ -52,12 +50,10 @@ class ClientHandler(Thread):
                 self.__announce__(f'[{self.username}] -> {message}') 
         except Exception as e:
             if not self.disconnected: 
-                # printError(f'Error handling client {self.clientAddress}!')
                 self.console.clearLine()
                 self.console.moveFront()
                 self.console.printlnError(f'Error handling client {self.clientAddress}!')
         finally:
             if not self.disconnected:
-                # printBlue(f'Closing connection to {self.clientAddress}...')
                 self.console.printlnBlue(f'Closing connection to {self.clientAddress}...')
                 self.disconnect()
