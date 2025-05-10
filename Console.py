@@ -1,7 +1,7 @@
 from typing import Optional
 import curses
 import time
-import os
+import math
 
 COLOR_BLUE: int = 10
 COLOR_RED: int = 20
@@ -14,6 +14,7 @@ LINESEP: str = '\n'
 class Console():
     def __init__(self):
         self.console: Optional[curses.window] = curses.initscr()
+        self.console.scrollok(True)
         curses.start_color()
         curses.init_pair(COLOR_BLUE, curses.COLOR_BLUE, curses.COLOR_BLACK)
         curses.init_pair(COLOR_RED, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -153,19 +154,35 @@ class Console():
             else: text += currentLine[len(currentLine) - amountNeeded:][::-1]
         return text[::-1]
     
-    def getBackTextToCharacter(self, character: str) -> str:
+    def getBackTextToString(self, string: str, timeoutSeconds: float, defaultString: str) -> str:
+        startTimeSeconds: float = time.time_ns() / math.pow(10, 9)
         text: str = ''
         y, x = self.console.getyx()
         while True:
+            currentTimeSeconds: float = time.time_ns() / math.pow(10, 9)
+            if currentTimeSeconds - startTimeSeconds > timeoutSeconds: return defaultString
             currentLine: str = self.getLineText(y)
-            characterIndex: int = currentLine.find(character)
+            characterIndex: int = currentLine.find(string)
             if characterIndex == -1:
                 text += currentLine[::-1]
                 y -= 1
             else: 
+                characterIndex += len(string)
                 text += currentLine[characterIndex:][::-1]
                 break
         return text[::-1]
+    
+    def getLinesCovered(self, string: str):
+        maxY, maxX = self.console.getmaxyx()
+        linesCovered: int = math.ceil(len(string) / maxX)
+        return linesCovered
+    
+    def input(self):
+        curses.echo()
+        inputBytes: bytes = self.console.getstr()
+        curses.noecho()
+        input: str = inputBytes.decode('utf-8')
+        return input
 
 if __name__ == '__main__':
     console: Console = Console()
@@ -188,9 +205,11 @@ if __name__ == '__main__':
     console.println('this is text')
     text2: str = console.getBackText(11)
     console.println(text2)
-    console.println('[Enter Message] ->\u200b Hello this is a message that is being written to send but isnt fini')
-    text3: str = console.getBackTextToCharacter('\x0b')[2:]
+    console.println('[Enter Message] -> Hello this is a message that is being written to send but isnt fini')
+    text3: str = console.getBackTextToString('[Enter Message] -> 1', 3, 'NONE')
     console.println(text3)
-    # \u200b
-    input('')
+    console.printDim('Enter something: ')
+    text4: str = console.input()
+    console.println(text4)
+    time.sleep(2)
     console.close()

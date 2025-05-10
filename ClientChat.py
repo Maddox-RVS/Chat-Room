@@ -1,14 +1,12 @@
 from PrintHelper import printBlue, printGreen, printRed, printError, printOverwriteLine, printDim, printOverwrite
 from colorama import Fore, Style, Back
 from threading import Thread
-from typing import Optional
+from Console import Console
 from typing import Union
 import threading
 import colorama
-import curses
 import socket
-import sys
-import os
+import time
 
 BUFFER_SIZE: int = 1024
 QUIT: str = 'quit'
@@ -21,19 +19,20 @@ class ClientTCP():
         self.clientSocket: Union[None, socket.socket] = None
         self.disconnected: bool = False
         self.stopEvent: Union[None, threading.Event] = None
+        self.console: Console = Console()
 
     def __sendMessage__(self, message: str):
         try: self.clientSocket.sendall(message.encode('utf-8'))
         except Exception as e: 
-            printError('Cound\'t send message. Make sure client is connected properly!')
+            self.console.printlnError('Cound\'t send message. Make sure client is connected properly!')
             self.disconnect()
 
     def disconnect(self):
-        printGreen('Disconnecting from server...')
+        self.console.printlnGreen('Disconnecting from server...')
         self.clientSocket.close()
         self.stopEvent.set()
         self.disconnected = True
-        printGreen('Disconnected.')
+        self.console.printlnGreen('Disconnected.')
 
     def connect(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSocket:
@@ -49,23 +48,33 @@ class ClientTCP():
 
                 while True:
                     data: bytes = self.clientSocket.recv(BUFFER_SIZE)
-                    printOverwriteLine(data.decode('utf-8'))
-                    print(Style.DIM + f'\n[Send Message] -> ' + Style.RESET_ALL, end='')
+                    currentText: str = self.console.getBackTextToString('[Send Message] ->', 3, '\{Timeout ERROR, current message erased.\} -> ')[1:]
+                    self.console.clearLine()
+                    self.console.moveFront()
+                    self.console.println(data.decode('utf-8'))
+                    self.console.printDim(f'[Send Message] -> ')
+                    self.console.print(currentText)
             except ConnectionRefusedError:
-                printError('Connection refused!')
+                self.console.printlnError('Connection refused!')
             except Exception as e:
                 if not self.disconnected: 
-                    printError('Issue connecting to server!')
+                    self.console.printlnError('Issue connecting to server!')
                     self.disconnect()
 
     def __runMessageSender__(self, stopEvent):
         while not self.stopEvent.is_set():
-            message: str = input(Style.DIM + '[Send Message] -> ' + Style.RESET_ALL)
-            # sys.stdout.write('\033[1A') # Move the cursor up 1 line
-            # printOverwriteLine(f'[{self.username}] -> {message}' + os.linesep)
-            printOverwrite(f'[Send Message] -> {message}', f'[{self.username}] -> {message}')
+            self.console.printDim('[Send Message] -> ')
+            message: str = self.console.input()
+
+            linesCovered: int = self.console.getLinesCovered(f'[Send Message] -> {message}')                                                    
+            for i in range(linesCovered):
+                self.console.clearLine()
+                self.console.moveUp()
+            self.console.moveFront()
+            self.console.println(f'[{self.username}] -> {message}')
+
             if self.disconnected: break
-            elif message.lower() == QUIT:
+            elif message.lower() == QUIT:            
                 self.disconnect()
             else: self.__sendMessage__(message)
 
@@ -79,3 +88,5 @@ if __name__ == '__main__':
     client.connect()
 
     colorama.deinit()
+
+    time.sleep(1)
