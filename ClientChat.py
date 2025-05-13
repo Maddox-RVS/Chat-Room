@@ -10,7 +10,21 @@ BUFFER_SIZE: int = 1024
 QUIT: str = '/quit'
 
 class ClientTCP():
+    '''
+    Represents a TCP client for the chat application.
+    Handles connection to the server, sending and receiving messages.
+    '''
+
     def __init__(self, host: str, port: int, username: str):
+        '''
+        Initializes the ClientTCP instance.
+
+        Args:
+            host (str): The server's hostname or IP address.
+            port (int): The server's port number.
+            username (str): The username for the client.
+        '''
+
         self.host: str = host
         self.port: int = port
         self.username: str = username
@@ -20,12 +34,24 @@ class ClientTCP():
         self.console: Console = Console()
 
     def __sendMessage__(self, message: str):
+        '''
+        Sends a message to the connected server.
+
+        Args:
+            message (str): The message string to send.
+        '''
+
         try: self.clientSocket.sendall(message.encode('utf-8'))
         except Exception as e: 
             self.console.printlnError('Cound\'t send message. Make sure client is connected properly!')
             self.disconnect()
 
     def disconnect(self):
+        '''
+        Disconnects the client from the server.
+        Closes the socket and sets the stop event for threads.
+        '''
+
         self.console.printlnGreen('Disconnecting from server...')
         self.clientSocket.close()
         self.stopEvent.set()
@@ -33,6 +59,12 @@ class ClientTCP():
         self.console.printlnGreen('Disconnected.')
 
     def connect(self):
+        '''
+        Establishes a connection to the server and starts communication.
+        It creates a socket, connects, starts a message sender thread,
+        sends the username, and then enters a loop to receive messages.
+        '''
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clientSocket:
             try:
                 self.clientSocket = clientSocket
@@ -66,6 +98,13 @@ class ClientTCP():
                 if not self.disconnected: self.disconnect()
 
     def __runMessageSender__(self, stopEvent):
+        '''
+        Runs in a separate thread to handle sending user input as messages.
+
+        Args:
+            stopEvent (threading.Event): Event used to signal the thread to stop.
+        '''
+        
         while not self.stopEvent.is_set():
             self.console.printDim('[Send Message] -> ')
             message: str = self.console.input()

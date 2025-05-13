@@ -13,8 +13,19 @@ SHUTDOWN: str = '/shutdown'
 ANNOUNCE: str = '/announce'
 
 class ServerTCP():
+    '''
+    Represents the TCP chat server.
+    Handles incoming client connections, manages clients, and processes server commands.
+    '''
 
     def __init__(self, port: int):
+        '''
+        Initializes the ServerTCP instance.
+
+        Args:
+            port (int): The port number for the server to listen on.
+        '''
+
         self.port: int = port
         self.serverClients: list[ClientHandler] = []
         self.serverSocket: Union[None, socket.socket] = None
@@ -22,6 +33,11 @@ class ServerTCP():
         self.console: Console = Console()
 
     def Shutdown(self):
+        '''
+        Shuts down the server gracefully.
+        Disconnects all clients and closes the server socket.
+        '''
+
         self.console.printlnGreen('Shutting down server...')
         self.console.printlnGreen('Disconnnecting clients...')
         for i in reversed(range(len(self.serverClients))):
@@ -31,10 +47,22 @@ class ServerTCP():
         self.console.printlnGreen('Successfully shutdown!')
 
     def __announce__(self, message: str):
+        '''
+        Sends a message to all currently connected clients.
+
+        Args:
+            message (str): The message string to broadcast.
+        '''
+
         for i in range(len(self.serverClients)):
             self.serverClients[i].sendMessage(message)
 
     def start(self):
+        '''
+        Starts the server, listens for connections, and handles them.
+        Binds the socket, starts a command processor thread, and accepts client connections.
+        '''
+
         try:
             self.isShutdown = False
             self.console.printlnGreen(f'Starting server on port {self.port}...')
@@ -65,6 +93,11 @@ class ServerTCP():
             self.isShutdown = True
 
     def __runCommandProcessor__(self):
+        '''
+        Runs in a separate thread to handle server administrator commands.
+        Processes commands like '/shutdown' and '/announce'.
+        '''
+        
         while True:
             self.console.printDim('[Enter Command] -> ')
             command: str = self.console.input().lower().split()
