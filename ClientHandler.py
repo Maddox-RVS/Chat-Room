@@ -81,7 +81,8 @@ class ClientHandler(Thread):
                 message = data.decode('utf-8')
 
                 currentLine: str = self.console.getCurrentLineText()
-                if currentLine != '': currentText: str = self.console.getBackTextToString('[Enter Command] ->', 3, '{Timeout ERROR, current command erased.} -> ')[1:]
+                currentText: str = ''
+                if currentLine != '': currentText = self.console.getBackTextToString('[Enter Command] ->', 3, '{Timeout ERROR, current command erased.} -> ')[1:]
                 self.console.clearLine()
                 self.console.moveFront()
                 self.console.println(f'[{self.username}] -> {message}')
