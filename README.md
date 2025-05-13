@@ -117,8 +117,7 @@ Enter these commands in the terminal window where the `ClientChat.py` script is 
 
 > **This project relies on the following Python packages:**     
 >
-> ansicon==1.89.0     
-> colorama==0.4.6     
+> ansicon==1.89.0         
 > cursor==1.3.5       
 > jinxed==1.3.0   
 > PySimpleValidate==0.2.12      
